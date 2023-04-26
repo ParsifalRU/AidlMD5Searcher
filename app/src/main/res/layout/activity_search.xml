@@ -52,6 +52,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
+            android:id="@+id/status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Файл не загружен"
@@ -70,12 +71,21 @@
             app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text = "База сравнений:"
+            android:gravity="center"
+            android:textSize="24sp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"/>
         <Button
             android:id="@+id/btnImpExpActivity"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Импортировать/Экспортировать"
-            android:layout_margin="10dp"/>
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"/>
 
 
 

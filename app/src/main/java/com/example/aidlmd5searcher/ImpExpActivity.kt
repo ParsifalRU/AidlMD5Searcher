@@ -1,29 +1,40 @@
 package com.example.aidlmd5searcher
 
+import android.content.Intent
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.provider.MediaStore.Audio.Radio
+import android.util.Log
 import android.view.View
-import android.view.View.*
-import android.widget.*
-import android.widget.RadioGroup.OnCheckedChangeListener
+import android.view.View.OnClickListener
+import android.widget.Button
+import android.widget.RadioButton
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
-import androidx.core.view.isVisible
+import androidx.appcompat.app.AppCompatActivity
+
 
 class ImpExpActivity : AppCompatActivity(), OnClickListener{
     
     private lateinit var importRadioButton:RadioButton
     private lateinit var exportRadioButton:RadioButton
     private lateinit var dirBtn: Button
+    private lateinit var backButton: Button
     private lateinit var openLauncher: ActivityResultLauncher<Array<String>>
     private lateinit var saveLauncher:ActivityResultLauncher<String>
+    var openData:String? = ""
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_imp_exp_acitivity)
+
+        if (savedInstanceState != null) {
+            openData = savedInstanceState.getString("file")!!
+        } else {
+            openData = ""
+        }
 
         initElements()
 
@@ -31,9 +42,15 @@ class ImpExpActivity : AppCompatActivity(), OnClickListener{
 
         saveLauncher()
 
-        Toast.makeText(this, "onCreate", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "$openData", Toast.LENGTH_SHORT).show()
     }
-    
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString("file", openData)
+        Toast.makeText(this, "saveData ${openData}", Toast.LENGTH_SHORT).show()
+    }
+
     private fun initElements(){
         importRadioButton = findViewById(R.id.radioButton)
         importRadioButton.setOnClickListener(this)
@@ -41,6 +58,8 @@ class ImpExpActivity : AppCompatActivity(), OnClickListener{
         exportRadioButton.setOnClickListener(this)
         dirBtn = findViewById(R.id.dirButton)
         dirBtn.setOnClickListener(this)
+        backButton = findViewById(R.id.backButton)
+        backButton.setOnClickListener(this)
     }
 
     override fun onClick(v: View) {
@@ -56,13 +75,20 @@ class ImpExpActivity : AppCompatActivity(), OnClickListener{
                 Toast.makeText(this, "Export", Toast.LENGTH_SHORT).show()
             }
             dirBtn -> {
-                Toast.makeText(this, "Directory", Toast.LENGTH_SHORT).show()
                 if (importRadioButton.isChecked == true){
                     openLauncher.launch(arrayOf("text/plain"))
                 }
                 else{
                     saveLauncher.launch("my-file.txt")
                 }
+            } /* intent.putExtra("hash", openData)*//*Log.d("LOGTAG", "intent extras\n $openData")*/
+            backButton -> {
+                val intent = Intent(this, SearchActivity::class.java)
+
+                intent.putExtra("key1", "value1");
+
+                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                startActivity(intent)
             }
         }
     }
@@ -76,7 +102,7 @@ class ImpExpActivity : AppCompatActivity(), OnClickListener{
                     Toast.makeText(this, "Пустой файл", Toast.LENGTH_SHORT).show()
                 }
             }catch (e:Exception){
-                Toast.makeText(this, "Can't open it", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Can't open it $e", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -92,30 +118,23 @@ class ImpExpActivity : AppCompatActivity(), OnClickListener{
                     }
                 }
             }catch (e:Exception){
-                Toast.makeText(this, "Can't save it", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Не получилось сохранить файл $e", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     private fun openFile(uri: Uri){
-        val data = contentResolver.openInputStream(uri)?.use {
-            //Запуск сервиса
+        openData = contentResolver.openInputStream(uri)?.use {
             String(it.readBytes())
         }
-        Toast.makeText(this, "Текст из файла - $data ", Toast.LENGTH_SHORT).show()
     }
 
     private fun saveFile(uri: Uri){
-        val data = contentResolver.openOutputStream(uri)?.use {
-            val text = "example"
-            it.write(text.toByteArray())
+        contentResolver.openOutputStream(uri)?.use {
+            it.write(openData?.toByteArray())
         }
-        Toast.makeText(this, "Текст из файла - $data  ", Toast.LENGTH_SHORT).show()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        Toast.makeText(this, "onDestroy", Toast.LENGTH_SHORT).show()
+    override fun onBackPressed() {
     }
-
 }

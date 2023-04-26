@@ -46,6 +46,13 @@
             android:visibility="visible"
             android:text="Укажите путь"/>
 
+        <Button
+            android:id="@+id/backButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="visible"
+            android:text="Вернуться у поиску"/>
+
     </RadioGroup>
 
 </LinearLayout>
