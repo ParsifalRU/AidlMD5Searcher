@@ -1,6 +1,9 @@
 package com.example.aidlmd5searcher
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -10,6 +13,7 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+
 
 class SearchActivity : AppCompatActivity(), OnClickListener {
 
@@ -27,6 +31,11 @@ class SearchActivity : AppCompatActivity(), OnClickListener {
         
         initViewElements()
 
+        val intentFilter = IntentFilter()
+        intentFilter.addAction("TRUE")
+        intentFilter.addAction("FALSE")
+
+        registerReceiver(broadcastReceiver(), intentFilter)
 
         if (savedInstanceState != null) {
             data = savedInstanceState.getString("EditText").toString()
@@ -46,7 +55,6 @@ class SearchActivity : AppCompatActivity(), OnClickListener {
             }
             else{
                 Toast.makeText(this, "OK", Toast.LENGTH_SHORT).show()
-                status.text = "ОК"
                 return true
             }
         }
@@ -61,10 +69,9 @@ class SearchActivity : AppCompatActivity(), OnClickListener {
 
     private fun impExpIntent(){
         val intent = Intent(this, ImpExpActivity::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP)
+        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         startActivity(intent)
     }
-
 
     private fun initViewElements(){
         editText = findViewById(R.id.HashMd5EditText)
@@ -78,23 +85,27 @@ class SearchActivity : AppCompatActivity(), OnClickListener {
     }
 
     override fun onClick(v: View) {
-
             when(v){
                 btnSearch -> {
-                    val extras = intent.extras
-                    if (extras != null) {
-                        val value1 = extras.getString ("key1");
-                        Log.d("LOGTAG", "value1: " + value1);
-                    }
 
-                    if (checkFormat(getText()) == true){
-                        val intent2 = getIntent()
-                        if(intent2.getStringExtra("hash")!= null){
+                    val getSharPref = getSharedPreferences("sharedFile", MODE_PRIVATE)
+                    val data:String = getSharPref.getString("file", "null").toString()
+                    Log.d("LOGTAG", "value1: " + data);
+
+                    /*val service = SearchService(data, editText.text.toString())*/
+
+                    if (checkFormat(getText())){
+                        if(data!="null"){
                             status.text = "Ищем совпадения"
-                            //Запуск службы по поиску
+                            val intent = Intent(this@SearchActivity, SearchService::class.java)
+                            intent.putExtra("data", data)
+                            intent.putExtra("searchHash", editText.text.toString())
+                            applicationContext.startService(intent)
 
+                        }else {
+                            status.text = "База сравнений пуста"
                         }
-                        status.text = "База сравнений пуста"
+
                     }
                     else{
                         status.text = "Неверный формат"
@@ -105,4 +116,29 @@ class SearchActivity : AppCompatActivity(), OnClickListener {
                 }
             }
     }
+
+    private fun broadcastReceiver(): BroadcastReceiver{
+        val myBroadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                Toast.makeText(context, "Зареган Броэдкаст", Toast.LENGTH_SHORT).show()
+                when(intent.action){
+                    "TRUE" -> {
+                        Toast.makeText(context, "Найдено", Toast.LENGTH_SHORT).show()
+                        status.text = "ОК"
+                    }
+                    "FALSE" -> {
+                        Toast.makeText(context, "Нихрена не найдено", Toast.LENGTH_SHORT).show()
+                        status.text = "Хеш не найден"
+                    }
+                }
+            }
+        }
+        return myBroadcastReceiver
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(broadcastReceiver())
+    }
 }
+

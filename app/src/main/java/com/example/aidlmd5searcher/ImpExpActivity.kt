@@ -1,5 +1,6 @@
 package com.example.aidlmd5searcher
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -13,6 +14,8 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 
 
 class ImpExpActivity : AppCompatActivity(), OnClickListener{
@@ -25,10 +28,10 @@ class ImpExpActivity : AppCompatActivity(), OnClickListener{
     private lateinit var saveLauncher:ActivityResultLauncher<String>
     var openData:String? = ""
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_imp_exp_acitivity)
+
 
         if (savedInstanceState != null) {
             openData = savedInstanceState.getString("file")!!
@@ -48,7 +51,7 @@ class ImpExpActivity : AppCompatActivity(), OnClickListener{
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putString("file", openData)
-        Toast.makeText(this, "saveData ${openData}", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "saveData $openData", Toast.LENGTH_SHORT).show()
     }
 
     private fun initElements(){
@@ -81,13 +84,11 @@ class ImpExpActivity : AppCompatActivity(), OnClickListener{
                 else{
                     saveLauncher.launch("my-file.txt")
                 }
-            } /* intent.putExtra("hash", openData)*//*Log.d("LOGTAG", "intent extras\n $openData")*/
+            }
             backButton -> {
                 val intent = Intent(this, SearchActivity::class.java)
-
                 intent.putExtra("key1", "value1");
-
-                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 startActivity(intent)
             }
         }
@@ -127,6 +128,10 @@ class ImpExpActivity : AppCompatActivity(), OnClickListener{
         openData = contentResolver.openInputStream(uri)?.use {
             String(it.readBytes())
         }
+        val sharedPref = getSharedPreferences(
+            "sharedFile", Context.MODE_PRIVATE)
+        val editor = sharedPref.edit()
+        editor.putString("file", openData.toString()).apply()
     }
 
     private fun saveFile(uri: Uri){

@@ -11,19 +11,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AidlMD5Searcher"
         tools:targetApi="31">
+
         <service
-            android:name=".SearchService"
+            android:name="com.example.aidlmd5searcher.SearchService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
 
         <activity
             android:name=".ImpExpActivity"
-            android:exported="false"
-            android:launchMode="singleTop"/>
+            android:exported="false" />
         <activity
             android:name=".SearchActivity"
-            android:exported="true"
-            android:launchMode="singleTop">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
