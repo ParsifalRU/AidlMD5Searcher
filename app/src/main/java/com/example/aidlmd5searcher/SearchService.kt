@@ -28,19 +28,10 @@ class SearchService : Service() {
         Log.d("LOGTAG", "Service - Start")
         val data = intent.getStringExtra("data")
         val searchHash = intent.getStringExtra("searchHash")
-
         val threadPoolExecutor = Executors.newFixedThreadPool(2) as ThreadPoolExecutor
-
         threadPoolExecutor.execute {
             comparator(data!!, searchHash!!)
         }
-       /* val thread = Thread {
-            //End or have hash
-            comparator(data!!, searchHash!!)
-        }
-        if (!thread.isAlive){
-                thread.start()
-        }*/
         return null
     }
 
@@ -67,6 +58,6 @@ class SearchService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d("LOGTAG", "onDestroy")
+        stopSelf()
     }
 }

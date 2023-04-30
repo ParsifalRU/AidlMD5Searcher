@@ -13,6 +13,7 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 
 class SearchActivity : AppCompatActivity(), OnClickListener {
@@ -31,11 +32,7 @@ class SearchActivity : AppCompatActivity(), OnClickListener {
         
         initViewElements()
 
-        val intentFilter = IntentFilter()
-        intentFilter.addAction("TRUE")
-        intentFilter.addAction("FALSE")
-
-        registerReceiver(broadcastReceiver(), intentFilter)
+        registerBS()
 
         if (savedInstanceState != null) {
             data = savedInstanceState.getString("EditText").toString()
@@ -43,20 +40,29 @@ class SearchActivity : AppCompatActivity(), OnClickListener {
         }
     }
 
+    private fun registerBS(){
+        val intentFilter = IntentFilter()
+        intentFilter.addAction("TRUE")
+        intentFilter.addAction("FALSE")
+        registerReceiver(broadcastReceiver(), intentFilter)
+    }
+
     private fun getText():String = editText.text.toString()
 
     private fun checkFormat(hash: String):Boolean{
-        if (hash.length != 32){
-            return false
-        }
-        else{
-            if (hash.indexOf("A")>0){
-                return false
+        val breakList =  listOf("a","b","c","d","e","f","0","1","2","3","4","5","6","7","8","9")
+        var n = 0
+        return if (hash.length != 32){
+            false
+        }else {
+            for (i in 1 .. 16){
+                n += hash.count { it.toString() == breakList[i - 1] }
+                Log.d("LOGTAG", "$n");
             }
-            else{
+            if (n == 32){
                 Toast.makeText(this, "OK", Toast.LENGTH_SHORT).show()
-                return true
-            }
+                true
+            }else false
         }
     }
 
@@ -92,8 +98,6 @@ class SearchActivity : AppCompatActivity(), OnClickListener {
                     val data:String = getSharPref.getString("file", "null").toString()
                     Log.d("LOGTAG", "value1: " + data);
 
-                    /*val service = SearchService(data, editText.text.toString())*/
-
                     if (checkFormat(getText())){
                         if(data!="null"){
                             status.text = "Ищем совпадения"
@@ -105,7 +109,6 @@ class SearchActivity : AppCompatActivity(), OnClickListener {
                             }catch (e:Exception){
                                 e.printStackTrace()
                             }
-
 
                         }else {
                             status.text = "База сравнений пуста"
@@ -143,7 +146,7 @@ class SearchActivity : AppCompatActivity(), OnClickListener {
 
     override fun onDestroy() {
         super.onDestroy()
-        unregisterReceiver(broadcastReceiver())
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver())
     }
 }
 
