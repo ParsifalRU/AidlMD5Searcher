@@ -100,7 +100,12 @@ class SearchActivity : AppCompatActivity(), OnClickListener {
                             val intent = Intent(this@SearchActivity, SearchService::class.java)
                             intent.putExtra("data", data)
                             intent.putExtra("searchHash", editText.text.toString())
-                            applicationContext.startService(intent)
+                            try {
+                                applicationContext.startService(intent)
+                            }catch (e:Exception){
+                                e.printStackTrace()
+                            }
+
 
                         }else {
                             status.text = "База сравнений пуста"
