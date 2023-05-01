@@ -4,14 +4,10 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
-import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.concurrent.ThreadPoolExecutor
 
 class SearchService : Service() {
-
-    val searchList = arrayListOf<String>()
-    val readyList = arrayListOf<String>()
 
     override fun onCreate() {
         super.onCreate()
@@ -23,7 +19,7 @@ class SearchService : Service() {
         onBind(intent)
         return super.onStartCommand(intent, flags, startId)
     }
-
+    //Создание ThreadPoolExecutor
     override fun onBind(intent: Intent): IBinder? {
         Log.d("LOGTAG", "Service - Start")
         val data = intent.getStringExtra("data")
@@ -34,7 +30,8 @@ class SearchService : Service() {
         }
         return null
     }
-
+    //Сравнение введенного хеша со списком (поиск) -> отправка Broadcast с итогом
+    // поиска + остановка службы, после получения результата
     private fun comparator(data:String, hash: String){
         val listAll = data.split("\n")
         Log.d("LOGTAG", "список - \n$listAll")
@@ -44,13 +41,13 @@ class SearchService : Service() {
             if(listAll[i-1].contains(hash)){
                 Log.d("LOGTAG", "найдено TRUE")
                 sendBroadcast(Intent("TRUE"))
-                readyList.add(hash)
                 stopSelf()
                 break
             }else{
                 Log.d("LOGTAG", "не найдено False")
-                sendBroadcast(Intent("FALSE"))
-                searchList.add(hash)
+                val intent = Intent("FALSE")
+                intent.putExtra("itemAddSearchList", hash)
+                sendBroadcast(intent)
             }
         }
         stopSelf()

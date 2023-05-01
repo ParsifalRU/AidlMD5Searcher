@@ -19,12 +19,13 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 class SearchActivity : AppCompatActivity(), OnClickListener {
 
     private lateinit var editText: EditText
-    lateinit var btnSearch: Button
-    lateinit var btnImpExpActivity: Button
-    lateinit var waitingList: ArrayList<String>
-    lateinit var resultList: ArrayList<String>
+    private lateinit var btnSearch: Button
+    private lateinit var btnImpExpActivity: Button
+    private lateinit var waitingList: ArrayList<String>
+    private lateinit var resultList: ArrayList<String>
     lateinit var status: TextView
-    var data = ""
+    private var data = ""
+    private val searchList = ArrayList<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,23 +33,27 @@ class SearchActivity : AppCompatActivity(), OnClickListener {
         
         initViewElements()
 
-        registerBS()
+        registerBroadcastReceiver()
 
+        setText(savedInstanceState)
+    }
+    //Восстанавливаем текст при перевороте
+    private fun setText(savedInstanceState: Bundle?){
         if (savedInstanceState != null) {
             data = savedInstanceState.getString("EditText").toString()
             editText.setText(data)
         }
     }
-
-    private fun registerBS(){
+    //Регистрируем BroadcastReceiver
+    private fun registerBroadcastReceiver(){
         val intentFilter = IntentFilter()
         intentFilter.addAction("TRUE")
         intentFilter.addAction("FALSE")
         registerReceiver(broadcastReceiver(), intentFilter)
     }
-
+    //Получаем текст из EditText
     private fun getText():String = editText.text.toString()
-
+    //Проверяю на формат MD5 + заполненность списка сравнения хешей
     private fun checkFormat(hash: String):Boolean{
         val breakList =  listOf("a","b","c","d","e","f","0","1","2","3","4","5","6","7","8","9")
         var n = 0
@@ -57,7 +62,7 @@ class SearchActivity : AppCompatActivity(), OnClickListener {
         }else {
             for (i in 1 .. 16){
                 n += hash.count { it.toString() == breakList[i - 1] }
-                Log.d("LOGTAG", "$n");
+                Log.d("LOGTAG", "$n")
             }
             if (n == 32){
                 Toast.makeText(this, "OK", Toast.LENGTH_SHORT).show()
@@ -65,20 +70,20 @@ class SearchActivity : AppCompatActivity(), OnClickListener {
             }else false
         }
     }
-
+    //Переопределяю onSaveInstanceState
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         val text = editText.text.toString()
         outState.putString("EditText", text)
         Toast.makeText(this, "saveData ${editText.text}", Toast.LENGTH_SHORT).show()
     }
-
+    //Явно вывзываю активити с импортом и экспортом списка хешей
     private fun impExpIntent(){
         val intent = Intent(this, ImpExpActivity::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
         startActivity(intent)
     }
-
+    //Определяю все View элементы
     private fun initViewElements(){
         editText = findViewById(R.id.HashMd5EditText)
         btnSearch = findViewById(R.id.btnSearch)
@@ -89,15 +94,13 @@ class SearchActivity : AppCompatActivity(), OnClickListener {
         resultList = ArrayList()
         status = findViewById(R.id.status)
     }
-
+    //Обрабаотка кнопок + SharPref для получения списка хешей
     override fun onClick(v: View) {
             when(v){
                 btnSearch -> {
-
                     val getSharPref = getSharedPreferences("sharedFile", MODE_PRIVATE)
                     val data:String = getSharPref.getString("file", "null").toString()
-                    Log.d("LOGTAG", "value1: " + data);
-
+                    Log.d("LOGTAG", "value1: $data")
                     if (checkFormat(getText())){
                         if(data!="null"){
                             status.text = "Ищем совпадения"
@@ -109,11 +112,9 @@ class SearchActivity : AppCompatActivity(), OnClickListener {
                             }catch (e:Exception){
                                 e.printStackTrace()
                             }
-
                         }else {
                             status.text = "База сравнений пуста"
                         }
-
                     }
                     else{
                         status.text = "Неверный формат"
@@ -124,7 +125,8 @@ class SearchActivity : AppCompatActivity(), OnClickListener {
                 }
             }
     }
-
+    //Сам BroadcastReceiver(+ добавляем хеши не найденные в поиске в список хешей на поиск)
+    // + получение BR на выходе
     private fun broadcastReceiver(): BroadcastReceiver{
         val myBroadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
@@ -135,15 +137,17 @@ class SearchActivity : AppCompatActivity(), OnClickListener {
                         status.text = "ОК"
                     }
                     "FALSE" -> {
-                        Toast.makeText(context, "Нихрена не найдено", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Ничего не найдено", Toast.LENGTH_SHORT).show()
                         status.text = "Хеш не найден"
+                        val newSearchItem = intent.extras?.getString("itemAddSearchList", "null").toString()
+                        searchList.add(newSearchItem)
                     }
                 }
             }
         }
         return myBroadcastReceiver
     }
-
+    //Отвязка BroadcastReceiver
     override fun onDestroy() {
         super.onDestroy()
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver())
