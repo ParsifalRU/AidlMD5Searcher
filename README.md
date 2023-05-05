@@ -35,7 +35,7 @@ Some screenshots:
 
 <img align="center" src="https://user-images.githubusercontent.com/109204462/236452330-68f4a19b-eabb-4ea1-9961-cace1ea27f6a.png" height="400" /></a>
 
-<img align="center" src="(https://user-images.githubusercontent.com/109204462/236452363-607e3eb1-67c1-4b5e-9639-993311cb8da8.png" height="400" /></a>
+<img align="center" src="https://user-images.githubusercontent.com/109204462/236452363-607e3eb1-67c1-4b5e-9639-993311cb8da8.png" height="400" /></a>
 
 <img align="center" src="https://user-images.githubusercontent.com/109204462/236452480-6716f71d-5078-4c04-9fe0-220bdd86ba5c.png" height="400" /></a>
 
