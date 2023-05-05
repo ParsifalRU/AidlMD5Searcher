@@ -20,7 +20,7 @@ Functionality used:
 
 Example file text:
 -
-3f4fdd521483fa7ad3f0ff907e7dbca4
+3f4fdd521483fa7ad3f0ff907e7dbca4/n
 6ab33d2be36cf4cf63395a1b60f160ff
 6ab33d2be36cf4cf63395a1b60f160ff
 66f8b5820c06198a49a4f34cf48a5c17
