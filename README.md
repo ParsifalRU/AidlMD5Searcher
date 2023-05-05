@@ -13,7 +13,7 @@ Libraries used:
 
 Functionality used:
 -
-- Services
+- Service
 - ActivityResultLauncher
 - BroadcastReceiver
 - ThreadPoolExecutor
